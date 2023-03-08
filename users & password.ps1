@@ -43,10 +43,10 @@ function New-UserInfo {
 }
 
 #importer stier
-$users = Import-Csv -Path 'path til user csv de brukere ligger' -Delimiter ";"
+$users = Import-Csv -Path 'users.csv' -Delimiter ";"
 $csvfile = @()
-$exportuserspath = 'final path med fnutter " ' 
-$exportpathfinal = 'Final path uten fnutter " ' #vet ikke om denne er nødvendig
+$exportuserspath = 'userfnutter.csv ' 
+$exportpathfinal = 'usersfinal.csv ' #vet ikke om denne er nødvendig
 
 
 foreach ($user in $users) {
