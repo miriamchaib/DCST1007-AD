@@ -67,7 +67,7 @@ $csvfile | Export-Csv -Path $exportuserspath -NoTypeInformation -Encoding 'UTF8'
 Import-Csv -Path $exportuserspath | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -Replace '"', ""} | Out-File $exportpathfinal -Encoding 'UTF8'
 
 
-$users = Import-Csv -path 'final path uten fnutter ' -Delimiter "," #husk å skille infoen med , (den er tatt vekk fra passord, så er good)
+$users = Import-Csv -path 'usersfinal.csv' -Delimiter "," #husk å skille infoen med , (den er tatt vekk fra passord, så er good)
 
 #lager SamAccountName
 foreach ($user in $users) {
