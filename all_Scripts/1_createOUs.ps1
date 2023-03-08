@@ -22,10 +22,13 @@ foreach ($ou in $topOUs) {
     -Path "OU=Casca,DC=casca,DC=com" `
     -Description "Top OU for Casca" `
 
+    $topOU = Get-ADOrganizationalUnit -Filter * | Where-Object {$_.name -eq "$ou"}
+
+
     foreach ($dept in $depts) {
-        New-ADOrganizationalUnit $depts ´
-        -Path $topOUs.DistinguishedName
-        -Description "Department OU for $dept in topOU "$depts `
+        New-ADOrganizationalUnit $dept  `
+        -Path $topOU.DistinguishedName  `
+        -Description "Department OU for $dept in topOU $depts" `
         -ProtectedFromAccidentalDeletion:$false
     }
 
