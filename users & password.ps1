@@ -2,8 +2,7 @@
 
 Function New-UserPassword {
     $chars = [char[]](
-        (33 | ForEach-Object {[char]$_}) + # tatt vekk 34 = "
-        (35..38 | ForEach-Object {[char]$_}) + # tatt vekk 39 = '
+        (35..38 | ForEach-Object {[char]$_}) + # tatt vekk 39 = ' og 34 = "
         (40..43 | ForEach-Object {[char]$_}) + # tatt vekk 44 = ,
         (45..47 | ForEach-Object {[char]$_}) +
         (48..57 | ForEach-Object {[char]$_}) + #tatt vekk 58 = :
@@ -14,7 +13,7 @@ Function New-UserPassword {
         (123..126 | ForEach-Object {[char]$_}) 
     )
 
-    -join (0..14 | ForEach-Object { $chars | Get-Random })
+    -join (0..12 | ForEach-Object { $chars | Get-Random })
 }
 
 
