@@ -21,6 +21,14 @@ foreach ($ou in $topOUs) {
     -ProtectedFromAccidentalDeletion:$false `
     -Path "OU=Casca,DC=casca,DC=com" `
     -Description "Top OU for Casca" `
+
+    foreach ($dept in $depts) {
+        New-ADOrganizationalUnit $depts ´
+        -Path $topOUs.DistinguishedName
+        -Description "Department OU for $dept in topOU "$depts `
+        -ProtectedFromAccidentalDeletion:$false
+    }
+
 }
 
 #liste ut alt
