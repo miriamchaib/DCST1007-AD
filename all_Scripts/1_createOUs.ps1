@@ -41,22 +41,17 @@ Get-ADOrganizationalUnit -Filter * | Select-Object name
 
 # CREATE GROUPS
 
-# Etter å ha opprettet OUene er det på tide å opprette gruppe-objektene, deretter skal vi lage brukere
-# fil nr 2
-
-# når vi har laget brukere skal vi bruke den koden til å lage admin brukere ( en admin er en bruker først, og deretter legger vi til rettighetene)
-
 
 # for each object inside the groups array, create the OU with the path and description where the description is Groups/$
 # security groups
 $groups = @('local', 'global')
 $groups | ForEach-Object {
-    New-ADOrganizationalUnit $_ -Path "OU=Groups,OU=Casca,DC=casca,DC=com" -Description "$_OU group"
+    New-ADOrganizationalUnit $_ -Path "OU=Casca_Groups,OU=Casca,DC=casca,DC=com" -Description "$_OU group"
 }
 
 # $depts = @('finance', 'hr', 'consultants', 'marketing')
 
-
+# globale og lokale grupper som representerer alle avdelingene i depts
 foreach ($dept in $depts) {
 
     $local_Groups = "l_$_"
@@ -65,13 +60,18 @@ foreach ($dept in $depts) {
     New-ADGroup -Name $local_Groups `
     -GroupScope Global `
     -GroupCategory Security `
-    -Path "OU=local,OU=Groups,OU=Casca,DC=casca,DC=com" `
+    -Path "OU=local,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" `
     -Description "Local Group for $_"
 
     # Create the global group in the Groups\global OU
     New-ADGroup -Name $global_Groups `
     -GroupScope Global `
     -GroupCategory Security `
-    -Path "OU=global,OU=Groups,OU=Casca,DC=casca,DC=com" `
+    -Path "OU=global,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" `
     -Description "Global Group for $_"
+
+
+    $local_Groups 
+
 }
+
