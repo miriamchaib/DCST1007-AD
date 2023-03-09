@@ -34,12 +34,7 @@ foreach ($ou in $topOUs) {
     }
 }
 
-$ouPath = "OU=Groups,OU=Casca,DC=casca,DC=com"
 
-
-
-$local = @('l_finance', 'l_hr', 'l_consultants', 'l_marketing')
-$global = @('g_finance', 'g_hr', 'g_consultants', 'g_marketing') 
 
 $casca_group_ous = @('local', 'global')
 $casca_group_ous  | ForEach-Object { 
@@ -49,44 +44,25 @@ $casca_group_ous  | ForEach-Object {
 $local = @('l_finance', 'l_hr', 'l_consultants', 'l_marketing')
 $global = @('g_finance', 'g_hr', 'g_consultants', 'g_marketing')
 
-$casca_group_ous = @('local', 'global')
-
-# groups er definert som toppOUene
-# casca_group_ous er ouene local og global under toppOUen Casca_Groups
-
 # inefficient code - needs to change
 foreach ($dept in $depts) {
-    foreach($group in $casca_group_ous) {
-            
-    if ($group -eq 'local') {
-        $path = Get-ADOrganizationalUnit -Filter * | 
-                Where-Object {($_.name -eq "$group") `
-                -and ($_.DistinguishedName -like "OU=$group,OU=$groups,*")}
-        
-                New-ADGroup -Name "g_$deptt" `
-                -SamAccountName "g_$dept" `
-                -GroupCategory Security `
-                -GroupScope Global `
-                -DisplayName "g_$dept" `
-                -Path $path.DistinguishedName `
-                -Description " local group for $dept group"
-        }
+    
+    New-ADGroup -Name "l_$dept" `
+    -SamAccountName "l_$dept" `
+    -GroupCategory Security `
+    -GroupScope DomainLocal `
+    -DisplayName "l_$dept" `
+    -Path "OU=local,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" `
+    -Description " local group for $dept group"
 
 
-    if ($group -eq 'global') {
-        $path = Get-ADOrganizationalUnit -Filter * | 
-            Where-Object {($_.name -eq "$group") `
-            -and ($_.DistinguishedName -like "OU=$group,OU=$groups,*")}
-
-            New-ADGroup -Name "g_$dept" `
-            -SamAccountName "g_$dept" `
-            -GroupCategory Security `
-            -GroupScope Global `
-            -DisplayName "g_$dept" `
-            -Path $path.DistinguishedName `
-            -Description " global group for $dept group"
-        
-        }
-    }
+    New-ADGroup -Name "g_$dept" `
+    -SamAccountName "g_$dept" `
+    -GroupCategory Security `
+    -GroupScope Global `
+    -DisplayName "g_$dept" `
+    -Path "OU=global,OU=Casca_Groups,OU=Casca,DC=casca,DC=com"  `
+    -Description " global group for $dept group"
         
 }
+        
