@@ -41,7 +41,6 @@ Get-ADOrganizationalUnit -Filter * | Select-Object name
 
 # CREATE GROUPS
 
-
 # for each object inside the groups array, create the OU with the path and description where the description is Groups/$
 # security groups
 $groups = @('local', 'global')
@@ -54,6 +53,7 @@ $groups | ForEach-Object {
 # globale og lokale grupper som representerer alle avdelingene i depts
 foreach ($dept in $depts) {
 
+    # TODO: fix dynamic $path
     $local_Groups = "l_$_"
     $global_Groups = "g_$_"
 
@@ -70,8 +70,6 @@ foreach ($dept in $depts) {
     -Path "OU=global,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" `
     -Description "Global Group for $_"
 
-
-    $local_Groups 
-
 }
+
 
