@@ -53,39 +53,39 @@ $casca_group_ous = @('local', 'global')
 
 # groups er definert som toppOUene
 # casca_group_ous er ouene local og global under toppOUen Casca_Groups
-foreach ($group in $casca_group_ous) {
 
+# inefficient code - needs to change
+$casca_group_ous | ForEach-Object {
+    
     if ($group -eq 'local') {
         $path = Get-ADOrganizationalUnit -Filter * | 
                 Where-Object {($_.name -eq "$group") `
                 -and ($_.DistinguishedName -like "OU=$group,OU=$groups,*")}
-        New-ADGroup -Name "g_$department" `
-                -SamAccountName "g_$department" `
-                -GroupCategory Security `
-                -GroupScope Global `
-                -DisplayName "g_$department" `
-                -Path $path.DistinguishedName `
-                -Description "$department group"
+        
+        foreach ($dept in $depts) {
+            New-ADGroup -Name "l_$dept" `
+            -SamAccountName "l_$dept" `
+            -GroupCategory Security `
+            -GroupScope Local `
+            -DisplayName "l_$dept" `
+            -Path $path.DistinguishedName `
+            -Description "local group for $dept group"
+            }
         }
-    }
+    
     
     if ($group -eq 'global') {
         $path = Get-ADOrganizationalUnit -Filter * | 
-        Where-Object {($_.name -eq "$group") `
-            -and ($_.DistinguishedName -like "OU=$,OU=$groups,*")}
-        New-ADGroup -Name "l_$department" `
-            -SamAccountName "l_$department" `
+            Where-Object {($_.name -eq "$group") `
+            -and ($_.DistinguishedName -like "OU=$group,OU=$groups,*")}
+        foreach ($dept in $depts) {
+            New-ADGroup -Name "g_$dept" `
+            -SamAccountName "g_$dept" `
             -GroupCategory Security `
             -GroupScope Global `
-            -DisplayName "l_$department" `
+            -DisplayName "g_$dept" `
             -Path $path.DistinguishedName `
-            -Description "$department group"
+            -Description "gobal group for $dept group"
+        }
     }
-
-
-
-
-
-    
-
-
+}
