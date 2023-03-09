@@ -84,9 +84,9 @@ foreach ($dept in $depts) {
             -GroupScope Global `
             -DisplayName "g_$dept" `
             -Path $path.DistinguishedName `
-            -Description "$dept group"
+            -Description " global group for $dept group"
         
         }
     }
         
-
+}
