@@ -1,4 +1,4 @@
-# Oprett OU-struktur i AD for brukere, maskinger og grupper
+# Opprett OU-struktur i AD for brukere, maskinger og grupper
 
 # OU=Casca,DC=casca,DC=com
 
@@ -44,7 +44,6 @@ $casca_group_ous  | ForEach-Object {
 $local = @('l_finance', 'l_hr', 'l_consultants', 'l_marketing')
 $global = @('g_finance', 'g_hr', 'g_consultants', 'g_marketing')
 
-# inefficient code - needs to change
 foreach ($dept in $depts) {
     
     New-ADGroup -Name "l_$dept" `
