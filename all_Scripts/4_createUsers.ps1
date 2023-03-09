@@ -46,7 +46,7 @@ foreach ($user in $users) {
 
     Add-Member -InputObject $line -MemberType NoteProperty -Name GivenName -Value $User.GivenName
     Add-Member -InputObject $line -MemberType NoteProperty -Name SurName -Value $user.SurName
-    Add-Member -InputObject $line -MemberType NoteProperty -Name UserPrincipalName -Value "$(New-UserInfo -Fornavn $user.GivenName -Etternavn $user.SurName)@core.sec"
+    Add-Member -InputObject $line -MemberType NoteProperty -Name UserPrincipalName -Value "$(New-UserInfo -Fornavn $user.GivenName -Etternavn $user.SurName)@casca.com"
     Add-Member -InputObject $line -MemberType NoteProperty -Name DisplayName -Value "$($user.GivenName) $($user.surname)" 
     Add-Member -InputObject $line -MemberType NoteProperty -Name department -Value $user.Department
     Add-Member -InputObject $line -MemberType NoteProperty -Name Password -Value $password
