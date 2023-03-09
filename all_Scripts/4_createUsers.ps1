@@ -1,6 +1,7 @@
-$users = Import-Csv -Path 'users.csv' -Delimiter ";"
+$users = Import-Csv -Path 'users_advances.csv' -Delimiter ";"
 $csvfile  = @()
 $exportuserspath = 'export_users.csv'
+$exportuserspathfinal= 'export_users_final.csv'
 Function New-UserPassword {
     $chars = [char[]](
         (33..47 | ForEach-Object {[char]$_}) +
@@ -53,3 +54,5 @@ foreach ($user in $users) {
     $csvfile += $line
 }
 
+$csvfile | Export-Csv -Path $exportuserspath -NoTypeInformation -Encoding 'UTF8'
+Import-Csv -Path $exportuserspath | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -Replace '"', ""} | Out-File $exportuserspathfinal -Encoding 'UTF8'
