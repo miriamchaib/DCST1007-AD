@@ -34,42 +34,58 @@ foreach ($ou in $topOUs) {
     }
 }
 
-
-#liste ut alt
-Get-ADOrganizationalUnit -Filter * | Select-Object name
+$ouPath = "OU=Groups,OU=Casca,DC=casca,DC=com"
 
 
-# CREATE GROUPS
 
-# for each object inside the groups array, create the OU with the path and description where the description is Groups/$
-# security groups
-$groups = @('local', 'global')
-$groups | ForEach-Object {
-    New-ADOrganizationalUnit $_ -Path "OU=Casca_Groups,OU=Casca,DC=casca,DC=com" -Description "$_OU group"
+$local = @('l_finance', 'l_hr', 'l_consultants', 'l_marketing')
+$global = @('g_finance', 'g_hr', 'g_consultants', 'g_marketing') 
+
+$casca_group_ous = @('local', 'global')
+$casca_group_ous  | ForEach-Object { 
+    New-ADOrganizationalUnit "$_" -Path "OU=Casca_Groups,OU=Casca,DC=casca,DC=com" -Description "OU for $_ groups" -ProtectedFromAccidentalDeletion:$false
 }
 
-# $depts = @('finance', 'hr', 'consultants', 'marketing')
+$local = @('l_finance', 'l_hr', 'l_consultants', 'l_marketing')
+$global = @('g_finance', 'g_hr', 'g_consultants', 'g_marketing')
 
-# globale og lokale grupper som representerer alle avdelingene i depts
-foreach ($dept in $depts) {
+$casca_group_ous = @('local', 'global')
 
-    # TODO: fix dynamic $path
-    $local_Groups = "l_$_"
-    $global_Groups = "g_$_"
+# groups er definert som toppOUene
+# casca_group_ous er ouene local og global under toppOUen Casca_Groups
+foreach ($group in $casca_group_ous) {
 
-    New-ADGroup -Name $local_Groups `
-    -GroupScope Global `
-    -GroupCategory Security `
-    -Path "OU=local,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" `
-    -Description "Local Group for $_"
+    if ($group -eq 'local') {
+        $path = Get-ADOrganizationalUnit -Filter * | 
+                Where-Object {($_.name -eq "$group") `
+                -and ($_.DistinguishedName -like "OU=$group,OU=$groups,*")}
+        New-ADGroup -Name "g_$department" `
+                -SamAccountName "g_$department" `
+                -GroupCategory Security `
+                -GroupScope Global `
+                -DisplayName "g_$department" `
+                -Path $path.DistinguishedName `
+                -Description "$department group"
+        }
+    }
+    
+    if ($group -eq 'global') {
+        $path = Get-ADOrganizationalUnit -Filter * | 
+        Where-Object {($_.name -eq "$group") `
+            -and ($_.DistinguishedName -like "OU=$,OU=$groups,*")}
+        New-ADGroup -Name "l_$department" `
+            -SamAccountName "l_$department" `
+            -GroupCategory Security `
+            -GroupScope Global `
+            -DisplayName "l_$department" `
+            -Path $path.DistinguishedName `
+            -Description "$department group"
+    }
 
-    # Create the global group in the Groups\global OU
-    New-ADGroup -Name $global_Groups `
-    -GroupScope Global `
-    -GroupCategory Security `
-    -Path "OU=global,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" `
-    -Description "Global Group for $_"
 
-}
+
+
+
+    
 
 
