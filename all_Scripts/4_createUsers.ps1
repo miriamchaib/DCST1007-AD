@@ -63,7 +63,6 @@ function New-UserInfo {
 
     return $UserPrincipalName
 
-
 }
 
 # adder kolonner i excelfila
@@ -187,7 +186,6 @@ function ADGroup {
         Add-ADGroupMember -Identity $localGroup -Members $user
     }
 }
-
 
 ADGroup("finance")
 ADGroup("hr")
