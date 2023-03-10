@@ -154,55 +154,43 @@ foreach ($ou in $topOUs) {
     }
 }
 
-
 # NEW AD GROUP FOR NEW USERS 
 
-$depts = @{
-    'finance' = 'OU=finance,OU=Casca_Users,OU=Casca,DC=casca,DC=com'
-    'hr' = 'OU=hr,OU=Casca_Users,OU=Casca,DC=casca,DC=com'
-    'consultants' = 'OU=consultants,OU=Casca_Users,OU=Casca,DC=casca,DC=com'
-    'marketing' = 'OU=marketing,OU=Casca_Users,OU=Casca,DC=casca,DC=com'
-}
-
- 
-
-foreach ($deptName in $depts.Keys) {
-
-    $deptOU = $depts[$deptName]
-    $users = Get-ADUser -Filter * -SearchBase $deptOU
-    $users | Format-Table Name, SamAccountName, @{Name='Department';Expression={$deptName}}, UserPrincipalName , DistinguishedName
-
-    
- #   $globalGroups = Get-ADGroup -Filter {GroupCategory -eq 'Security'} -SearchBase "OU=global,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" |
-  #  ForEach-Object { $_.Name }
-
-    $localGroups = Get-ADGroup -Filter {GroupCategory -eq 'Security'} -SearchBase "OU=local,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" |
-    ForEach-Object { $_.Name }
-
+function ADGroup {
+    param (
+        $OU
+    )
+    $users = Get-ADUser -Filter * -Properties department -SearchBase "OU=Casca_Users,OU=Casca,DC=casca,DC=com"
 
     foreach ($user in $users) {
-       foreach ($lg in $localGroups) {
-           $localGroupNameParts = $lg.Split('_')
-         $localGroupDeptName = $localGroupNameParts[1]
-               if ($user.Department -match $localGroupDeptName){ 
-            
-                Add-ADPrincipalGroupMembership -Identity $user.SamAccountName -MemberOf "g_$department"
-                }
-            
-       }  
+        switch ($user.department) {
+            "Finance" {
+                $globalGroup = "g_finance"
+                $localGroup = "l_finance"
+            }
+            "HR" {
+                $globalGroup = "g_hr"
+                $localGroup = "l_hr"
+            }
+            "Consultants" {
+                $globalGroup = "g_consultants"
+                $localGroup = "l_consultants"
+            }
+            "Marketing" {
+                $globalGroup = "g_marketing"
+                $localGroup = "l_marketing"
+            }
+            default { Write-Warning "Unknown department: $($user.department)" }
+        }
+
+        Add-ADGroupMember -Identity $globalGroup -Members $user
+        Add-ADGroupMember -Identity $localGroup -Members $user
     }
 }
 
 
+ADGroup("finance")
+ADGroup("hr")
+ADGroup("consultants")
+ADGroup("marketing")
 
-$ADUsers = @()
-
-foreach ($department in $depts) {
-    $ADUsers = Get-ADUser -Filter {Department -eq $department} -Properties Department
-    #Write-Host "$ADUsers som er funnet under $department"
-
-    foreach ($aduser in $ADUsers) {
-        Add-ADPrincipalGroupMembership -Identity $aduser.SamAccountName -MemberOf "g_$department"
-    }
-
-}
