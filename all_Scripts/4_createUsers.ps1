@@ -128,19 +128,81 @@ foreach ($user in $users) {
     -AccountPassword (ConvertTo-SecureString $user.Password -AsPlainText -Force)
 }
 
+$depts = @('finance', 'hr', 'consultants', 'marketing') # må se hva vi gjør med IT og cyber security under consultants
+
+
+# legg til i adgroup
+
+# hvordan finne brukere med dept
+
+# adusers må inneholde alle brukere som har en department satt
+foreach ($ou in $topOUs) {
+    New-ADOrganizationalUnit $ou `
+    -ProtectedFromAccidentalDeletion:$false `
+    -Path "OU=Casca,DC=casca,DC=com" `
+    -Description "Top OU for Casca" `
+
+    $topOU = Get-ADOrganizationalUnit -Filter * | Where-Object {$_.name -eq "$ou"}
+
+
+    foreach ($dept in $depts) {
+        New-ADOrganizationalUnit $dept  `
+        -Path $topOU.DistinguishedName  `
+        -Description "Department OU for $dept in topOU $depts" `
+        -ProtectedFromAccidentalDeletion:$false
+
+    }
+}
+
+
+# NEW AD GROUP FOR NEW USERS 
+
+$depts = @{
+    'finance' = 'OU=finance,OU=Casca_Users,OU=Casca,DC=casca,DC=com'
+    'hr' = 'OU=hr,OU=Casca_Users,OU=Casca,DC=casca,DC=com'
+    'consultants' = 'OU=consultants,OU=Casca_Users,OU=Casca,DC=casca,DC=com'
+    'marketing' = 'OU=marketing,OU=Casca_Users,OU=Casca,DC=casca,DC=com'
+}
+
+ 
+
+foreach ($deptName in $depts.Keys) {
+
+    $deptOU = $depts[$deptName]
+    $users = Get-ADUser -Filter * -SearchBase $deptOU
+    $users | Format-Table Name, SamAccountName, @{Name='Department';Expression={$deptName}}, UserPrincipalName , DistinguishedName
+
+    
+ #   $globalGroups = Get-ADGroup -Filter {GroupCategory -eq 'Security'} -SearchBase "OU=global,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" |
+  #  ForEach-Object { $_.Name }
+
+    $localGroups = Get-ADGroup -Filter {GroupCategory -eq 'Security'} -SearchBase "OU=local,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" |
+    ForEach-Object { $_.Name }
+
+
+    foreach ($user in $users) {
+       foreach ($lg in $localGroups) {
+           $localGroupNameParts = $lg.Split('_')
+         $localGroupDeptName = $localGroupNameParts[1]
+               if ($user.Department -match $localGroupDeptName){ 
+            
+                Add-ADPrincipalGroupMembership -Identity $user.SamAccountName -MemberOf "g_$department"
+                }
+            
+       }  
+    }
+}
 
 
 
+$ADUsers = @()
 
+foreach ($department in $depts) {
+    $ADUsers = Get-ADUser -Filter {Department -eq $department} -Properties Department
+    #Write-Host "$ADUsers som er funnet under $department"
 
+    foreach ($aduser in $ADUsers) {
+        Add-ADPrincipalGroupMembership -Identity $aduser.SamAccountName -MemberOf "g_$department"
+    }
 
-
-
-
-
-
-
-
-
-
-
+}
