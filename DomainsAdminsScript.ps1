@@ -64,41 +64,6 @@ $csv | Export-Csv -Path $DomainUserPath -NoTypeInformation -Encoding 'UTF8' -Use
 
 
 
-$users = Import-Csv -Path 'DomainAdminsFinal.csv' -Delimiter ","
-
-foreach ($user in $users) {
-    $sam = $user.UserPrincipalName.Split("@")
-        if ($sam[0].Length -gt 19) {
-            "SAM for lang, bruker de 19 første tegnene i variabelen"
-            $sam[0] = $sam[0].Substring(0, 19) 
-        }
-        $sam[0]
-        [string] $samaccountname = $sam[0]
-
-        [string] $department = $user.Department
-        [string] $searchdn = "OU=$department,OU=$lit_users,*"
-        $path = Get-ADOrganizationalUnit -Filter * | Where-Object {($_.name -eq $user.Department) -and ($_.DistinguishedName -like $searchdn)} 
-        
-        if (!(Get-ADUser -Filter "sAMAccountName -eq '$($samaccountname)'")) {
-            Write-Host "$samaccountname does not exist." -ForegroundColor Green
-            Write-Host "Creating User ....%" -ForegroundColor Green
-            Write-Host $user.DisplayName -ForegroundColor Green
-
-            New-ADUser `
-            -SamAccountName $samaccountname `
-            -UserPrincipalName $user.UserPrincipalName `
-            -Name $user.DisplayName `
-            -GivenName $user.GivenName `
-            -Surname $user.SurName `
-            -Enabled $True `
-            -ChangePasswordAtLogon $false `
-            -DisplayName $user.DisplayName `
-            -Department $user.Department `
-            -Path $path `
-            -AccountPassword (convertto-securestring $user.Password -AsPlainText -Force)
-
-        }
-    }
 
 
 
