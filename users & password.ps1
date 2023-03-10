@@ -132,10 +132,10 @@ Add-ADPrincipalGroupMembership -Identity 'tor.i.melling' -MemberOf "Domain Admin
 
 # ---- Move Computer to correct OU ---- #
 Get-ADComputer -Filter * | ft
-Move-ADObject -Identity "CN=CL1,CN=Computers,DC=core,DC=sec" ` #må byttes
-            -TargetPath "OU=hr,OU=LearnIT_Computers,DC=core,DC=sec" #må byttes
+Move-ADObject -Identity "CN=CL1,CN=Computers,DC=casca,DC=local" ` #må byttes
+            -TargetPath "OU=marketing,OU=LearnIT_Computers,DC=casca,DC=local" #må byttes
 
 New-ADOrganizationalUnit "Servers" ` #må byttes
                 -Description "OU for Servers" ` #må byttes
-                -Path "OU=LearnIT_Computers,DC=core,DC=sec" ` #må byttes
+                -Path "OU=LearnIT_Computers,DC=casca,DC=local" ` #må byttes
                 -ProtectedFromAccidentalDeletion:$false

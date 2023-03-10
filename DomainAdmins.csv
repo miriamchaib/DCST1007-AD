@@ -1,5 +1,5 @@
-Name;GivenName;SurName;SamAccountName;UserPrincipalName;Displayname;
-Maren Landro;Maren;Landro;maren.landro;maren.landro@casca.local;Maren Landro
-Vitaliy Bravikov;Vitaliy;Bravikov;vitaliy.bravikov;vitaly.bravikov@casca.local;Vitaliy Bravikov
-Miriam Chaib;Miriam;Chaib;miriam.chaib;miriam.chaib@casca.local;Miriam Chaib
-Christina Giltvedt;Christina;Giltvedt;christina.giltvedt;christina.giltvedt@casca.local;Christina Giltvedt
+Name;GivenName;SurName;SamAccountName;UserPrincipalName;Displayname;Password;
+Maren Landro;Maren;Landro;maren.landro;maren.landro@casca.local;Maren Landro;Admin123456@
+Vitaliy Bravikov;Vitaliy;Bravikov;vitaliy.bravikov;vitaly.bravikov@casca.local;Vitaliy Bravikov;Admin123456@
+Miriam Chaib;Miriam;Chaib;miriam.chaib;miriam.chaib@casca.local;Miriam Chaib;Admin123456@
+Christina Giltvedt;Christina;Giltvedt;christina.giltvedt;christina.giltvedt@casca.local;Christina Giltvedt;Admin123456@
