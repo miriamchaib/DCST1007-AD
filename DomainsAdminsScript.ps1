@@ -45,7 +45,7 @@ function New-UserInfo {
 $DomainUsers = Import-Csv -Path 'DomainAdmins.csv'-Delimiter ";"
 $csv = @()
 $DomainUserPath = 'DomainAdminsPath.csv'
-$DomainUsersFinal = 'DomainAdminsFinal.csv'
+
 
 foreach ($user in $DomainUsers) {
     $password = New-UserPassword
@@ -61,7 +61,7 @@ foreach ($user in $DomainUsers) {
 }
 
 $csv | Export-Csv -Path $DomainUserPath -NoTypeInformation -Encoding 'UTF8' -UseQuotes Never
-Import-Csv -Path $DomainUserPath | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -Replace '"', ""} | Out-File $DomainUsersFinal -Encoding 'UTF8'
+
 
 
 $users = Import-Csv -Path 'DomainAdminsFinal.csv' -Delimiter ","
@@ -99,6 +99,7 @@ foreach ($user in $users) {
 
         }
     }
+
 
 
 
