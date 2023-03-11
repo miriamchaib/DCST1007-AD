@@ -76,19 +76,3 @@ $global | ForEach-Object {
 function Get-ADGroupByName($Name) {
     Get-ADGroup -Filter "Name -eq '$Name'"
 }
-
-# remoteaccess for local users
-
-foreach ($dept in $depts) {
-    $localgroup = Get-ADGroup -Filter "Name -like 'l_$dept'"
-    $localgroup | Format-Table Name, samaccountname
-
-    $remoteaccess =  Get-ADGroupByName 'l_remoteaccess'
-    foreach ($locals in $localgroup) {
-        $membername = $_.samaccountname 
-        if (!($remoteaccess.$membername -contains $membername)) {
-            Add-ADGroupMember -Identity $remoteaccess -Members $membername
-            Write-Host " added $($membername) to $($remoteaccess.Name)"
-        }
-    }
-}

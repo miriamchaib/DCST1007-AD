@@ -192,3 +192,16 @@ ADGroup("hr")
 ADGroup("consultants")
 ADGroup("marketing")
 
+foreach ($dept in $depts) {
+    $localgroup = Get-ADGroup -Filter * | Where-Object { $_.Name -match "^l_$dept"}
+    $localgroup | Format-Table Name, samaccountname
+
+    $remoteaccess = Get-ADGroup -Filter "Name -eq 'l_remoteaccess'"
+    foreach ($member in (Get-ADGroupMember -Identity $localgroup)) {
+        $membername = $member.samaccountname 
+        if (!(Get-ADGroupMember -Identity $remoteaccess -Recursive | Where-Object { $_.samaccountname -eq $membername })) {
+            Add-ADGroupMember -Identity $remoteaccess -Members $membername
+            Write-Host " added $($membername) to $($remoteaccess.Name)"
+        }
+    }
+}
