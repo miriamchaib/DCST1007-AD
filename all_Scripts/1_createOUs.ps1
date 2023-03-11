@@ -41,19 +41,27 @@ $casca_group_ous  | ForEach-Object {
     New-ADOrganizationalUnit "$_" -Path "OU=Casca_Groups,OU=Casca,DC=casca,DC=com" -Description "OU for $_ groups" -ProtectedFromAccidentalDeletion:$false
 }
 
-$local = @('l_finance', 'l_hr', 'l_consultants', 'l_marketing')
+$local = @('l_finance', 'l_hr', 'l_consultants', 'l_marketing', 'l_remoteaccess')
 $global = @('g_finance', 'g_hr', 'g_consultants', 'g_marketing')
 
-foreach ($dept in $depts) {
-    
-    New-ADGroup -Name "l_$dept" `
-    -SamAccountName "l_$dept" `
+
+$local | ForEach-Object {
+    $dept = ($_ -split '_')[1]
+
+    New-ADGroup -Name $_ `
     -GroupCategory Security `
     -GroupScope DomainLocal `
-    -DisplayName "l_$dept" `
-    -Path "OU=local,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" `
-    -Description " local group for $dept group"
+    -DisplayName $_ `
+    -Path 'OU=local,OU=Casca_Groups,OU=Casca,DC=casca,DC=com' `
+    -SamAccountName "$_"
+    -Description " local group for $dept security group"
 
+}
+        
+
+
+$global | ForEach-Object {
+    $dept = ($_ -split '_')[1]
 
     New-ADGroup -Name "g_$dept" `
     -SamAccountName "g_$dept" `
@@ -61,7 +69,26 @@ foreach ($dept in $depts) {
     -GroupScope Global `
     -DisplayName "g_$dept" `
     -Path "OU=global,OU=Casca_Groups,OU=Casca,DC=casca,DC=com"  `
-    -Description " global group for $dept group"
-        
+    -Description " global group for $dept security group"
+
 }
-        
+
+function Get-ADGroupByName($Name) {
+    Get-ADGroup -Filter "Name -eq '$Name'"
+}
+
+# remoteaccess for local users
+
+foreach ($dept in $depts) {
+    $localgroup = Get-ADGroup -Filter "Name -like 'l_$dept'"
+    $localgroup | Format-Table Name, samaccountname
+
+    $remoteaccess =  Get-ADGroupByName 'l_remoteaccess'
+    foreach ($locals in $localgroup) {
+        $membername = $_.samaccountname 
+        if (!($remoteaccess.$membername -contains $membername)) {
+            Add-ADGroupMember -Identity $remoteaccess -Members $membername
+            Write-Host " added $($membername) to $($remoteaccess.Name)"
+        }
+    }
+}
