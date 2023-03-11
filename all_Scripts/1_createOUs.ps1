@@ -12,7 +12,7 @@ $groups = "Casca_Groups"
 $computers = "Casca_Computers"         
 
 $topOUs = @($users,$groups,$computers)
-$depts = @('finance', 'hr', 'consultants', 'marketing') # må se hva vi gjør med IT og cyber security under consultants
+$depts = @('finance', 'hr', 'consultants', 'marketing', 'it') # må se hva vi gjør med IT og cyber security under consultants
 
 
 # Oppretter alle OUene
@@ -41,27 +41,30 @@ $casca_group_ous  | ForEach-Object {
     New-ADOrganizationalUnit "$_" -Path "OU=Casca_Groups,OU=Casca,DC=casca,DC=com" -Description "OU for $_ groups" -ProtectedFromAccidentalDeletion:$false
 }
 
-$local = @('l_finance', 'l_hr', 'l_consultants', 'l_marketing', 'l_remoteaccess')
-$global = @('g_finance', 'g_hr', 'g_consultants', 'g_marketing')
+$local = @('l_finance', 'l_hr', 'l_consultants', 'l_marketing', 'l_remoteaccess', 'l_it')
+$global = @('g_finance', 'g_hr', 'g_consultants', 'g_marketing', 'g__it')
 
 
-$local | ForEach-Object {
-    $dept = ($_ -split '_')[1]
+# inefficient code - needs to change
+foreach ($dept in $depts) {
 
-    New-ADGroup -Name $_ `
+
+
+    New-ADGroup -Name "l_$dept" `
+    -SamAccountName "l_$dept" `
     -GroupCategory Security `
     -GroupScope DomainLocal `
-    -DisplayName $_ `
-    -Path 'OU=local,OU=Casca_Groups,OU=Casca,DC=casca,DC=com' `
-    -SamAccountName "$_"
-    -Description " local group for $dept security group"
+    -DisplayName "l_$dept" `
+    -Path "OU=local,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" `
+    -Description " local group for $dept group"
 
-}
-        
-
-
-$global | ForEach-Object {
-    $dept = ($_ -split '_')[1]
+    New-ADGroup -Name "l_remoteaccess" `
+    -SamAccountName "l_remoteaccess" `
+    -GroupCategory Security `
+    -GroupScope DomainLocal `
+    -DisplayName "l_remoteaccess" `
+    -Path "OU=local,OU=Casca_Groups,OU=Casca,DC=casca,DC=com" `
+    -Description "remote access for local group"
 
     New-ADGroup -Name "g_$dept" `
     -SamAccountName "g_$dept" `
@@ -69,10 +72,34 @@ $global | ForEach-Object {
     -GroupScope Global `
     -DisplayName "g_$dept" `
     -Path "OU=global,OU=Casca_Groups,OU=Casca,DC=casca,DC=com"  `
-    -Description " global group for $dept security group"
+    -Description " global group for $dept group"
 
+
+        
 }
 
-function Get-ADGroupByName($Name) {
-    Get-ADGroup -Filter "Name -eq '$Name'"
-}
+# ---- Move Computer to correct OU ---- #
+Get-ADComputer -Filter * | ft
+Move-ADObject -Identity "CN=MGR,CN=Computers,DC=casca,DC=com" `
+            -TargetPath "OU=it,OU=Casca_Computers,OU=Casca,DC=casca,DC=com"
+
+Get-ADComputer -Filter * | ft
+Move-ADObject -Identity "CN=CL1,CN=Computers,DC=casca,DC=com" `
+            -TargetPath "OU=hr,OU=Casca_Computers,OU=Casca,DC=casca,DC=com"
+
+            
+Get-ADComputer -Filter * | ft
+Move-ADObject -Identity "CN=CL2,CN=Computers,DC=casca,DC=com" `
+            -TargetPath "OU=marketing,OU=Casca_Computers,OU=Casca,DC=casca,DC=com"
+            
+
+Get-ADComputer -Filter * | ft
+Move-ADObject -Identity "CN=CL3,CN=Computers,DC=casca,DC=com" `
+            -TargetPath "OU=finance,OU=Casca_Computers,OU=Casca,DC=casca,DC=com"
+                        
+            
+
+New-ADOrganizationalUnit "Servers" `
+                -Description "OU for Servers" `
+                -Path "OU=Casca_Computers,OU=Casca,DC=casca,DC=com" `
+                -ProtectedFromAccidentalDeletion:$false
