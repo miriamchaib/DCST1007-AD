@@ -127,7 +127,7 @@ foreach ($user in $users) {
     -AccountPassword (ConvertTo-SecureString $user.Password -AsPlainText -Force)
 }
 
-$depts = @('finance', 'hr', 'consultants', 'marketing') # må se hva vi gjør med IT og cyber security under consultants
+$depts = @('finance', 'hr', 'consultants', 'marketing', 'it') # må se hva vi gjør med IT og cyber security under consultants
 
 
 # legg til i adgroup
@@ -179,11 +179,18 @@ function ADGroup {
                 $globalGroup = "g_marketing"
                 $localGroup = "l_marketing"
             }
+            "it" {
+                $globalGroup = "g_it"
+                $localGroup = "l_it"
+                
+
+            }
             default { Write-Warning "Unknown department: $($user.department)" }
         }
 
         Add-ADGroupMember -Identity $globalGroup -Members $user
         Add-ADGroupMember -Identity $localGroup -Members $user
+
     }
 }
 
@@ -191,6 +198,8 @@ ADGroup("finance")
 ADGroup("hr")
 ADGroup("consultants")
 ADGroup("marketing")
+ADGroup("it")
+
 
 foreach ($dept in $depts) {
     $localgroup = Get-ADGroup -Filter * | Where-Object { $_.Name -match "^l_$dept"}
@@ -205,3 +214,4 @@ foreach ($dept in $depts) {
         }
     }
 }
+
