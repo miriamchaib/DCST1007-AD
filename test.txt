@@ -1,0 +1,19 @@
+$DomainUsers = Import-Csv -Path 'DomainAdmins.csv'-Delimiter ";"
+$csv = @()
+$DomainUserPath = 'DomainAdminsPath.csv'
+
+
+foreach ($user in $DomainUsers) {
+    $password = New-UserPassword
+    $line = New-Object -TypeName psobject
+
+    Add-Member -InputObject $line -MemberType NoteProperty -Name GivenName -Value $User.GivenName
+    Add-Member -InputObject $line -MemberType NoteProperty -Name SurName -Value $user.SurName
+    Add-Member -InputObject $line -MemberType NoteProperty -Name UserPrincipalName -Value "$(New-UserInfo -Fornavn $user.GivenName -Etternavn $user.SurName)@casca.local"
+    Add-Member -InputObject $line -MemberType NoteProperty -Name DisplayName -Value "$($user.GivenName) $($user.surname)" 
+    Add-Member -InputObject $line -MemberType NoteProperty -Name department -Value $user.Department
+    Add-Member -InputObject $line -MemberType NoteProperty -Name Password -Value $password
+    $csv += $line
+}
+
+$csv | Export-Csv -Path $DomainUserPath -NoTypeInformation -Encoding 'UTF8' -UseQuotes Never
