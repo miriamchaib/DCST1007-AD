@@ -84,10 +84,8 @@ foreach($user in $users) {
 
 $csvfile | Export-Csv -Path $exportuserspath -NoTypeInformation -Encoding 'UTF-8'
 
-
 # fnutter
 Import-Csv -Path $exportuserspath | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -Replace '"', ""} | Out-File $exportuserspathfinal -Encoding 'UTF-8'
-
 
 ############# OPPRETTE BRUKERNE ########################
 
@@ -159,6 +157,7 @@ function ADGroup {
     param (
         $OU
     )
+    
     $users = Get-ADUser -Filter * -Properties department -SearchBase "OU=Casca_Users,OU=Casca,DC=casca,DC=com"
 
     foreach ($user in $users) {
