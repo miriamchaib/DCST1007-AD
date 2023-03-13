@@ -11,8 +11,6 @@ foreach ($item in $OU) {
     Get-GPO -Name $GPOName | New-GPLink -Target "OU=Casca_Computers,OU=Casca,DC=casca,DC=com"
 }
 
-
-
 # GPO for removable media, ex. turning off the ability for ur users to plug in USB drives,external hard drives or insert cds and dvds
 
 $GPOName = "Disable connection to removable media"
@@ -43,21 +41,17 @@ foreach ($item in $OU) {
 }
 
 
+# Ansatte kan ikke force restart fordi det kna gjøre at man mister data, og komprimerer integriteten til systemet
+
+$GPOName = "Not allowed to force restart"
 
 
+$OU = 'OU=Casca_Users'
+foreach ($item in $OU) {
+    Get-GPO -Name $GPOName | New-GPLink -Target "$item,OU=Casca_Users,OU=Casca,DC=casca,DC=com"
+}
+
+$GPOName = "No forced restart is allowed"
 
 
-# første instillingen er at brukere som logger inn med remote desktop i denne OUen ikke
-# " ikke får lov til å skru av maskiner eller restarte  maskiner fra deres remote session
-# sikrer at maskinene ikke blir utilsiktet skrudd av og tjenestene som kjører på maskinen blir utilgjengelig
-
-# 1. Casca_Computers får en casca computers gpo
-# nå må vi konfigurere gpoen
-# instillinger som blir gjeldende for alle maskiner under casca computers ouen
-# setter instillingene som blir gjeldene
-
-# skal gjelde brukerne som logger inn så vi legger til en bruker under casca users først og gjør brukeren om til it admin (legger til i it admins gruppa)
-# får muligheten til å logge på remote desktop på maskinene i domentet
-
-# 
 

@@ -1,3 +1,4 @@
+$depts = @('finance', 'hr', 'consultants', 'marketing', 'it') 
 
 # Creating the local and global OUs under Casca_Groups
 
