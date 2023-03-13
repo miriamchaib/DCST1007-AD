@@ -14,7 +14,6 @@ $global = @('g_finance', 'g_hr', 'g_consultants', 'g_marketing', 'g__it')
 foreach ($dept in $depts) {
 
 
-
     New-ADGroup -Name "l_$dept" `
     -SamAccountName "l_$dept" `
     -GroupCategory Security `
