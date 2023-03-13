@@ -28,7 +28,6 @@ $password = New-UserPassword -length 14
 
 
 
-# kan splice fornavn etternavn og mellomnavn og kombinere typ 1 og 2 bokstaver fra hver. Test om noen har et etternavn på 2 bokstaver, ta tar vi med begge (og la det være brukernavn)
 function New-UserInfo {
     param(
         # givenname surname
@@ -87,13 +86,10 @@ $csvfile | Export-Csv -Path $exportuserspath -NoTypeInformation -Encoding 'UTF-8
 # fnutter
 Import-Csv -Path $exportuserspath | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -Replace '"', ""} | Out-File $exportuserspathfinal -Encoding 'UTF-8'
 
-############# OPPRETTE BRUKERNE ########################
 
 # samaccountname er mandatory, hvilken verdi skal vi gi (20 characters or less)
 $users = Import-Csv -path 'DomainAdminUsers.csv' -Delimiter ","
 
-#må fikse samaccountname
-# burde ha det her i en funksjon
 foreach ($user in $users) {
     
     $sam = $user.UserPrincipalName.Split("@") 
