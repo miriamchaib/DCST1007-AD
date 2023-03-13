@@ -1,12 +1,12 @@
 # bulk user creation with group membership in active directory 
 
-#$users = Import-Csv -Path 'allUsers.csv' -Delimiter ";"
-#$csvfile = @()
+$users = Import-Csv -Path 'allUsers.csv' -Delimiter ";"
+$csvfile = @()
 
 
 #ender opp med denne
-#$exportuserspath = 'users_final.csv'
-#$exportuserspathfinal = 'users_uten_final.csv'
+$exportuserspath = 'users_final.csv'
+$exportuserspathfinal = 'users_uten_final.csv'
 #må lage samaccountname som ikke inneholder norske særtegn, eks bruke brukernavn som samaccountname så det som eksporteres er den endelige
 # lista med brukere hvor man har att hensyn til at feks samaccountname ikke kan ikkeholde æ ø og å + at passord inneholder spesialtegn oog tall
 
@@ -28,7 +28,6 @@ $password = New-UserPassword -length 14
 
 
 
-# kan splice fornavn etternavn og mellomnavn og kombinere typ 1 og 2 bokstaver fra hver. Test om noen har et etternavn på 2 bokstaver, ta tar vi med begge (og la det være brukernavn)
 function New-UserInfo {
     param(
         # givenname surname
@@ -67,8 +66,8 @@ function New-UserInfo {
 
 # adder kolonner i excelfila
 
-#foreach($user in $users) {
-   <# $password = New-UserPassword -Length 14 # passordet 
+foreach($user in $users) {
+    $password = New-UserPassword -Length 14 # passordet 
     $line = New-Object -TypeName PSObject 
 
     Add-Member -InputObject $line -MemberType NoteProperty -Name GivenName -Value $user.GivenName 
@@ -77,50 +76,21 @@ function New-UserInfo {
     Add-Member -InputObject $line -MemberType NoteProperty -Name DisplayName -Value "$($user.GivenName) $($user.SurName)"
     Add-Member -InputObject $line -MemberType NoteProperty -Name Department -Value  $user.Department
     Add-Member -InputObject $line -MemberType NoteProperty -Name Password -Value $password
-    $csvfile += $line#> 
-#}
+    $csvfile += $line
+}
 
 # hittil har vi fått givenname surname userprincipalname displayname department og password
 
-# *******************************************************************************************
-$DomainUsers = Import-Csv -Path 'allUsers/allUsers.csv'-Delimiter ";"
-$csv = @()
-$DomainUserPath = 'allUsers/users_uten_final.csv'
-
-
-foreach ($user in $DomainUsers) {
-    $password = New-UserPassword
-    $line = New-Object -TypeName psobject
-
-    Add-Member -InputObject $line -MemberType NoteProperty -Name GivenName -Value $User.GivenName
-    Add-Member -InputObject $line -MemberType NoteProperty -Name SurName -Value $user.SurName
-    Add-Member -InputObject $line -MemberType NoteProperty -Name UserPrincipalName -Value "$(New-UserInfo -Fornavn $user.GivenName -Etternavn $user.SurName)@casca.local"
-    Add-Member -InputObject $line -MemberType NoteProperty -Name DisplayName -Value "$($user.GivenName) $($user.surname)" 
-    Add-Member -InputObject $line -MemberType NoteProperty -Name department -Value $user.Department
-    Add-Member -InputObject $line -MemberType NoteProperty -Name Password -Value $password
-    $csv += $line
-}
-
-$csv | Export-Csv -Path $DomainUserPath -NoTypeInformation -Encoding 'UTF8' -UseQuotes Never
-
-
-# *******************************************************************************************
-
-
-
+$csvfile | Export-Csv -Path $exportuserspath -NoTypeInformation -Encoding 'UTF-8'
 
 # fnutter
-#Import-Csv -Path $exportuserspath | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -Replace '"', ""} | Out-File $exportuserspathfinal -Encoding 'UTF-8'
+Import-Csv -Path $exportuserspath | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -Replace '"', ""} | Out-File $exportuserspathfinal -Encoding 'UTF-8'
 
-
-############# OPPRETTE BRUKERNE ########################
 
 # samaccountname er mandatory, hvilken verdi skal vi gi (20 characters or less)
-#$users = Import-Csv -path 'export_users_final.csv' -Delimiter ","
+$users = Import-Csv -path 'users_uten_final.csv' -Delimiter ","
 
-#må fikse samaccountname
-# burde ha det her i en funksjon
-foreach ($user in $DomainUserPath) {
+foreach ($user in $users) {
     
     $sam = $user.UserPrincipalName.Split("@") 
     if ($sam[0].Length -gt 19) {
@@ -137,13 +107,6 @@ foreach ($user in $DomainUserPath) {
     [string] $searchdn = "OU=$department,OU=Casca_Users,*"
     $path = Get-ADOrganizationalUnit -Filter * | Where-Object {($_.name -eq $user.Department) -and ($_.DistinguishedName -like $searchdn)}
 
-    $userexists  = Get-ADUser -Filter "sAMAccountName -eq '$($samaccountname)'"
-
-    if (!$userexists) {
-        Write-Host "$samaccountname does not exist." -ForegroundColor Green
-        Write-Host "Creating User ....%" -ForegroundColor Green
-        Write-Host $user.DisplayName -ForegroundColor Green
-
     New-ADUser `
     -SamAccountName $samaccountname `
     -UserPrincipalName $user.UserPrincipalName `
@@ -156,7 +119,6 @@ foreach ($user in $DomainUserPath) {
     -Department $user.Department `
     -Path $path `
     -AccountPassword (ConvertTo-SecureString $user.Password -AsPlainText -Force)
-}
 }
 
 $depts = @('finance', 'hr', 'consultants', 'marketing', 'it') # må se hva vi gjør med IT og cyber security under consultants
@@ -191,6 +153,7 @@ function ADGroup {
     param (
         $OU
     )
+    
     $users = Get-ADUser -Filter * -Properties department -SearchBase "OU=Casca_Users,OU=Casca,DC=casca,DC=com"
 
     foreach ($user in $users) {
@@ -214,8 +177,6 @@ function ADGroup {
             "it" {
                 $globalGroup = "g_it"
                 $localGroup = "l_it"
-                
-
             }
             default { Write-Warning "Unknown department: $($user.department)" }
         }

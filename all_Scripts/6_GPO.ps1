@@ -1,10 +1,3 @@
-# melde inn pcene i domene for remote access
-Enter-PSSession -ComputerName dc1
-$GPO = New-GPO -Name "Allow Remote Desktop for HR employees"
-New-GPLink -Name "Allow Remote Desktop for HR employees" -Target "OU=hr,OU=Casca_Computers,OU=Casca,DC=casca,DC=com"
-
-Add-GPORestrictedGroup -Name "Allow Remote Desktop for employees" -GPOPath $gpo.GPOFileSysPath -GroupName "Remote Desktop Users"
-
 
 # Tillater bedriftens ansatte å Remote Desktop til sine laptoper (cli1 til hr, cl2 til marketing og 3 for finance)
 $GPOName = "Allow RDP"
@@ -15,7 +8,7 @@ New-GPO -name $GPOName -comment "Allows remote desktop"
 #linke GPOen til de ulike departmentene
 $OU = 'OU=Casca_Computers'
 foreach ($item in $OU) {
-    Get-GPO -Name $GPOName | New-GPLink -Target "OU=$item,OU=Casca,DC=casca,DC=com"
+    Get-GPO -Name $GPOName | New-GPLink -Target "OU=Casca_Computers,OU=Casca,DC=casca,DC=com"
 }
 
 
