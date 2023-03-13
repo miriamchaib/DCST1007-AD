@@ -1,16 +1,10 @@
-# bulk user creation with group membership in active directory 
 
-$users = Import-Csv -Path 'allUsers.csv' -Delimiter ";"
 $csvfile = @()
 
 
-#ender opp med denne
 $exportuserspath = 'users_final.csv'
 $exportuserspathfinal = 'users_uten_final.csv'
-#må lage samaccountname som ikke inneholder norske særtegn, eks bruke brukernavn som samaccountname så det som eksporteres er den endelige
-# lista med brukere hvor man har att hensyn til at feks samaccountname ikke kan ikkeholde æ ø og å + at passord inneholder spesialtegn oog tall
 
-# generere rand pass
 function New-UserPassword {
     $chars = [char[]](
         (33..47 | ForEach-Object {[char]$_}) +
@@ -54,19 +48,43 @@ function New-UserInfo {
 
     $UserPrincipalName = $("$($fornavn).$etternavn").ToLower() 
 
-    # kan ikke ha æ ø å og andre særtegn i samaccountname
-    $UserPrincipalName = $UserPrincipalName.Replace('æ', 'e')
-    $UserPrincipalName = $UserPrincipalName.Replace('ø', 'o')
-    $UserPrincipalName = $UserPrincipalName.Replace('å', 'a')
-    $UserPrincipalName = $UserPrincipalName.Replace('é', 'e')
+    # liste over alle særtegn
+    $replaceLetters = @{
+        'æ' = 'ae'
+        'ø' = 'o'
+        'å' = 'a'
+        'é' = 'e'
+    }
+
+    # hvis vi har særtegn må det byttes
+    $UserPrincipalName = $UserPrincipalName.ToCharArray() | ForEach-Object {
+        if ($replaceLetters.ContainsKey($_)) {
+            $replaceLetters[$_]
+        } else {
+            $_
+        }
+    }
+
+    # Konverter $UserPrincipalName til en string igjen
+    $UserPrincipalName = -join $UserPrincipalName
 
     return $UserPrincipalName
 
-}
+    }
 
 # adder kolonner i excelfila
 
 foreach($user in $users) {
+
+    $userExist = $csvfile | Where-Object { $_.GivenName -eq $user.GivenName -and $_.SurName -eq $user.SurName -and $_.Department -eq $user.Department }
+
+    if($userExist) {
+        Write-Warning " $($user.GivenName) $($user.SurName) finnes i $($user.Department). Genererer unikt brukernavn..."
+    
+        $user.GivenName = $user.GivenName.Substring(0, $user.GivenName.Length - 1)
+        $user.SurName = $user.SurName.Substring(0, $user.SurName.Length - 1)
+    }
+
     $password = New-UserPassword -Length 14 # passordet 
     $line = New-Object -TypeName PSObject 
 
@@ -82,9 +100,6 @@ foreach($user in $users) {
 # hittil har vi fått givenname surname userprincipalname displayname department og password
 
 $csvfile | Export-Csv -Path $exportuserspath -NoTypeInformation -Encoding 'UTF-8'
-
-# fnutter
-Import-Csv -Path $exportuserspath | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -Replace '"', ""} | Out-File $exportuserspathfinal -Encoding 'UTF-8'
 
 
 # samaccountname er mandatory, hvilken verdi skal vi gi (20 characters or less)
@@ -123,30 +138,6 @@ foreach ($user in $users) {
 
 $depts = @('finance', 'hr', 'consultants', 'marketing', 'it') # må se hva vi gjør med IT og cyber security under consultants
 
-
-# legg til i adgroup
-
-# hvordan finne brukere med dept
-
-# adusers må inneholde alle brukere som har en department satt
-foreach ($ou in $topOUs) {
-    New-ADOrganizationalUnit $ou `
-    -ProtectedFromAccidentalDeletion:$false `
-    -Path "OU=Casca,DC=casca,DC=com" `
-    -Description "Top OU for Casca" `
-
-    $topOU = Get-ADOrganizationalUnit -Filter * | Where-Object {$_.name -eq "$ou"}
-
-
-    foreach ($dept in $depts) {
-        New-ADOrganizationalUnit $dept  `
-        -Path $topOU.DistinguishedName  `
-        -Description "Department OU for $dept in topOU $depts" `
-        -ProtectedFromAccidentalDeletion:$false
-
-    }
-}
-
 # NEW AD GROUP FOR NEW USERS 
 
 function ADGroup {
@@ -177,6 +168,7 @@ function ADGroup {
             "it" {
                 $globalGroup = "g_it"
                 $localGroup = "l_it"
+
             }
             default { Write-Warning "Unknown department: $($user.department)" }
         }
